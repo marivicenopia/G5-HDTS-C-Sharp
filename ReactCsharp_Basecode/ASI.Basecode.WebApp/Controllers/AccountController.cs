@@ -57,20 +57,51 @@ namespace ASI.Basecode.WebApp.Controllers
         /// <summary>
         /// Login Method
         /// </summary>
-
         [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginViewModel model)
-
         {
-            this._session.SetString("HasSession", "Exist");
+            try
+            {
+                this._session.SetString("HasSession", "Exist");
 
-            User user = null;
+                // Find user by username or email
+                var user = await this._userService.RetrieveUser(model.UserId, model.Password);
+                
+                if (user == null)
+                {
+                    return Unauthorized(new { message = "Invalid username or password" });
+                }
 
-            //await this._signInManager.SignInAsync(user);
-            this._session.SetString("UserName", model.UserId);
+                // Set session
+                this._session.SetString("UserName", user.Username);
+                this._session.SetString("UserId", user.Id);
+                this._session.SetString("UserRole", user.Role);
+                this._session.SetString("UserDepartment", user.Department);
 
-            return Ok(user);
+                // Return user info without password
+                var userResponse = new
+                {
+                    user.Id,
+                    user.UserId,
+                    user.Username,
+                    user.FirstName,
+                    user.LastName,
+                    user.Email,
+                    user.Role,
+                    user.Department
+                };
+
+                return Ok(new { 
+                    message = "Login successful", 
+                    user = userResponse,
+                    token = user.Id // Using user ID as token for simplicity
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Login failed", error = ex.Message });
+            }
         }
 
         /// <summary>

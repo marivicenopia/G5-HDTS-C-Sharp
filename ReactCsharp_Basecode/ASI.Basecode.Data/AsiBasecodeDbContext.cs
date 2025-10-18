@@ -3,13 +3,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ASI.Basecode.Data
 {
-    public partial class AsiBasecodeDBContext : DbContext
+    public partial class AsiBasecodeDbContext : DbContext
     {
-        public AsiBasecodeDBContext()
+        public AsiBasecodeDbContext()
         {
         }
 
-        public AsiBasecodeDBContext(DbContextOptions<AsiBasecodeDBContext> options)
+        public AsiBasecodeDbContext(DbContextOptions<AsiBasecodeDbContext> options)
             : base(options)
         {
         }
@@ -29,19 +29,19 @@ namespace ASI.Basecode.Data
 
                 entity.Property(e => e.CreatedTime).HasColumnType("datetime");
 
-                entity.Property(e => e.Name)
+                entity.Property(e => e.FirstName)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+                    
+                entity.Property(e => e.LastName)
                     .IsRequired()
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Password)
                     .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.UpdatedBy)
-                    .IsRequired()
-                    .HasMaxLength(50)
+                    .HasMaxLength(255)
                     .IsUnicode(false);
 
                 entity.Property(e => e.UpdatedTime).HasColumnType("datetime");
