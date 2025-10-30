@@ -12,11 +12,11 @@ namespace ASI.Basecode.WebApp.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UsersController : ControllerBase
+    public class UsersControllerOLd : ControllerBase
     {
         private readonly NexDeskDbContext _context;
 
-        public UsersController(NexDeskDbContext context)
+        public UsersControllerOLd(NexDeskDbContext context)
         {
             _context = context;
         }

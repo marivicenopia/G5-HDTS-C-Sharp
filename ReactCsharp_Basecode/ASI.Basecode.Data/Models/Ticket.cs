@@ -25,7 +25,8 @@ public partial class Ticket
 
     public string ResolvedBy { get; set; }
 
-    public DateTime ResolvedDate { get; set; }
+    public DateTime? ResolvedDate { get; set; }
+
 
     public string ResolutionDescription { get; set; }
 

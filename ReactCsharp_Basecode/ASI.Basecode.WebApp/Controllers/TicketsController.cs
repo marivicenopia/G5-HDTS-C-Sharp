@@ -149,7 +149,7 @@ namespace ASI.Basecode.WebApp.Controllers
 
                 ticket.Status = status;
                 ticket.ResolvedDate = status.ToLower() == "resolved" ? DateTime.Now : (DateTime?)null;
-                
+
                 await _context.SaveChangesAsync();
                 return Ok(ticket);
             }
