@@ -18,6 +18,8 @@ public partial class NexDeskDbContext : DbContext
 
     public virtual DbSet<Article> Articles { get; set; }
 
+    public virtual DbSet<Category> Categories { get; set; }
+
     public virtual DbSet<Feedback> Feedbacks { get; set; }
 
     public virtual DbSet<Ticket> Tickets { get; set; }
@@ -32,9 +34,32 @@ public partial class NexDeskDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Category>(entity =>
+        {
+            entity.HasKey(e => e.CategoryId).HasName("PK_knowledge_categories");
+
+            entity.ToTable("knowledge_categories");
+
+            entity.Property(e => e.CategoryId)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+            entity.Property(e => e.Description)
+                .HasMaxLength(255)
+                .IsUnicode(false);
+            entity.Property(e => e.DisplayOrder);
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true);
+            entity.Property(e => e.Name)
+                .IsRequired()
+                .HasMaxLength(100)
+                .IsUnicode(false);
+        });
+
         modelBuilder.Entity<Article>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK_articlesdb");
+
+            entity.ToTable("articlesdb");
 
             entity.Property(e => e.Id)
                 .HasMaxLength(20)
@@ -42,14 +67,25 @@ public partial class NexDeskDbContext : DbContext
             entity.Property(e => e.Author)
                 .HasMaxLength(100)
                 .IsUnicode(false);
-            entity.Property(e => e.Category)
-                .HasMaxLength(100)
+            entity.Property(e => e.CategoryId)
+                .IsRequired()
+                .HasMaxLength(20)
                 .IsUnicode(false);
             entity.Property(e => e.Content).IsUnicode(false);
+            entity.Property(e => e.Status)
+                .IsRequired()
+                .HasMaxLength(20)
+                .IsUnicode(false);
             entity.Property(e => e.Title)
                 .IsRequired()
                 .HasMaxLength(200)
                 .IsUnicode(false);
+
+            entity.HasOne(d => d.Category)
+                .WithMany(p => p.Articles)
+                .HasForeignKey(d => d.CategoryId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_articlesdb_categories");
         });
 
         modelBuilder.Entity<Feedback>(entity =>
