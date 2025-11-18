@@ -29,8 +29,7 @@ public partial class NexDeskDbContext : DbContext
     public virtual DbSet<Department> Departments { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Addr=DESKTOP-NAUCN0P\\SQLEXPRESS; database=NexDeskDb; Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True");
+        => optionsBuilder.UseSqlServer("Server=LANCE-PC\\SQLEXPRESS;Database=NexDeskDb;Trusted_Connection=True;MultipleActiveResultSets=True;TrustServerCertificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -82,7 +81,7 @@ public partial class NexDeskDbContext : DbContext
             entity.HasKey(e => e.Id).HasName("PK_ticketsdb");
 
             entity.Property(e => e.Id)
-                .HasMaxLength(10)
+                .HasMaxLength(450)
                 .IsUnicode(false);
             entity.Property(e => e.AgentFeedback).IsUnicode(false);
             entity.Property(e => e.AssignedTo)
