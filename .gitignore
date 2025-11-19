@@ -28,6 +28,7 @@ x64/
 # Debug artifacts
 launchSettings.json
 
+
 # Prevent accidental re-checkin of NuGet.exe
 NuGet.exe
 
