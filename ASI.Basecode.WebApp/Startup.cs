@@ -97,11 +97,16 @@ namespace ASI.Basecode.WebApp
             //Configuration
             services.Configure<TokenAuthentication>(Configuration.GetSection("TokenAuthentication"));
 
-            // Session
-            services.AddSession(options =>
-            {
-                options.Cookie.Name = Const.Issuer;
-            });
+            // Session - Disabled to prevent unnecessary cookie creation for JWT authentication
+            // services.AddSession(options =>
+            // {
+            //     options.Cookie.Name = Const.Issuer;
+            //     options.Cookie.HttpOnly = true;
+            //     options.Cookie.SecurePolicy = Microsoft.AspNetCore.Http.CookieSecurePolicy.SameAsRequest;
+            //     options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax;
+            //     options.IdleTimeout = TimeSpan.FromMinutes(30);
+            //     options.IOTimeout = TimeSpan.FromSeconds(30);
+            // });
 
             // DI Services AutoMapper(Add Profile)
             this.ConfigureAutoMapper();
@@ -150,7 +155,8 @@ namespace ASI.Basecode.WebApp
             this._app.UseRequestLocalization(options.Value);
             this._app.UseCors("AllowReactApp");
 
-            this._app.UseSession();
+            // Disable session middleware to prevent unnecessary cookie creation
+            // this._app.UseSession();
             this._app.UseRouting();
 
             this._app.UseAuthentication();

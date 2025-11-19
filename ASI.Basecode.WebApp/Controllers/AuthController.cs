@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 namespace ASI.Basecode.WebApp.Controllers
 {
     [ApiController]
-    [Route("api/[controller]/[action]")]
+    [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
 
@@ -30,6 +30,7 @@ namespace ASI.Basecode.WebApp.Controllers
         }
 
         [HttpPost("login")]
+        [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] AuthenticateUserRequest request)
         {
             try
@@ -53,21 +54,73 @@ namespace ASI.Basecode.WebApp.Controllers
                     return Unauthorized("Account is deactivated or not found");
                 }
 
-                // Generate JWT token (if implemented)
-                // var token = await _jwtTokenService.GenerateTokenAsync(user);
+                // Generate JWT token
+                var token = _jwtTokenService.GenerateToken(user);
 
                 return Ok(new
                 {
-                    // token, // Uncomment when JWT service is implemented
-                    role = user.Role,
-                    username = user.Username,
-                    departmentId = user.DepartmentId
+                    status = "Success",
+                    response = new
+                    {
+                        userId = user.UserId,
+                        username = user.Username,
+                        email = user.Email,
+                        role = user.Role,
+                        departmentId = user.DepartmentId,
+                        fullName = $"{user.FirstName} {user.LastName}".Trim(),
+                        isActive = user.IsActive,
+                        token = token
+                    }
                 });
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"❌ Login error: {ex.Message}");
                 return StatusCode(500, "An error occurred during login");
+            }
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            try
+            {
+                // Clear server-side session if using sessions (session might be disabled)
+                try
+                {
+                    HttpContext.Session?.Clear();
+                }
+                catch (InvalidOperationException)
+                {
+                    // Session is not configured, which is fine for JWT authentication
+                }
+
+                // Clear specific known authentication cookies
+                Response.Cookies.Delete("tkn");
+                Response.Cookies.Delete("authToken");
+                Response.Cookies.Delete("asi.basecode"); // Session cookie
+                Response.Cookies.Delete(Resources.Constants.Const.Issuer); // Session cookie by constant
+
+                // Clear all authentication-related cookies
+                foreach (var cookieName in Request.Cookies.Keys)
+                {
+                    if (cookieName.Contains("auth") ||
+                        cookieName.ToLower().Contains("token") ||
+                        cookieName.ToLower().Contains("basecode") ||
+                        cookieName == "tkn" ||
+                        cookieName == "asi.basecode")
+                    {
+                        Response.Cookies.Delete(cookieName);
+                    }
+                }
+
+                Console.WriteLine("✅ User logged out successfully on server side");
+                return Ok(new { message = "Logged out successfully" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Logout error: {ex.Message}");
+                return StatusCode(500, "An error occurred during logout");
             }
         }
     }
