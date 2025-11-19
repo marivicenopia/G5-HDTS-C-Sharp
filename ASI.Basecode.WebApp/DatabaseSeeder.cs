@@ -18,33 +18,8 @@ namespace ASI.Basecode.WebApp
 
         public void SeedDatabase()
         {
-            // First, ensure the Departments table exists
-            try
-            {
-                _context.Database.ExecuteSqlRaw(@"
-                    IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Departments' AND xtype='U')
-                    BEGIN
-                        CREATE TABLE [dbo].[Departments](
-                            [Id] [nvarchar](450) NOT NULL,
-                            [Name] [nvarchar](max) NULL,
-                            [Description] [nvarchar](max) NULL,
-                            [IsActive] [bit] NOT NULL,
-                            [CreatedTime] [datetime2](7) NOT NULL,
-                            [CreatedBy] [nvarchar](max) NULL,
-                            [UpdatedTime] [datetime2](7) NOT NULL,
-                            [UpdatedBy] [nvarchar](max) NULL,
-                         CONSTRAINT [PK_Departments] PRIMARY KEY CLUSTERED 
-                        (
-                            [Id] ASC
-                        )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-                        ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-                    END");
-            }
-            catch (Exception ex)
-            {
-                // Log error but continue - table might already exist
-                Console.WriteLine($"Error creating Departments table: {ex.Message}");
-            }
+            // Ensure the database schema is created
+            _context.Database.EnsureCreated();
 
             // Create departments if they don't exist
             try
@@ -121,79 +96,89 @@ namespace ASI.Basecode.WebApp
             }
 
             // Create test users if they don't exist
-            if (!_context.Users.Any())
+            try
             {
-                var testUsers = new[]
+                if (!_context.Users.Any())
                 {
-                    new User
+                    var testUsers = new[]
                     {
-                        Id = "1",
-                        UserId = "USR001",
-                        Username = "admin",
-                        Password = PasswordManager.EncryptPassword("admin123"),
-                        FirstName = "Admin",
-                        LastName = "User",
-                        Email = "admin@nexdesk.com",
-                        Role = "admin",
-                        DepartmentId = "1", // IT
-                        IsActive = true,
-                        CreatedBy = "System",
-                        CreatedTime = DateTime.Now,
-                        UpdatedTime = DateTime.Now
-                    },
-                    new User
-                    {
-                        Id = "2",
-                        UserId = "USR002",
-                        Username = "agent",
-                        Password = PasswordManager.EncryptPassword("agent123"),
-                        FirstName = "Agent",
-                        LastName = "Smith",
-                        Email = "agent@nexdesk.com",
-                        Role = "agent",
-                        DepartmentId = "6", // Customer Support
-                        IsActive = true,
-                        CreatedBy = "System",
-                        CreatedTime = DateTime.Now,
-                        UpdatedTime = DateTime.Now
-                    },
-                    new User
-                    {
-                        Id = "3",
-                        UserId = "USR003",
-                        Username = "staff",
-                        Password = PasswordManager.EncryptPassword("staff123"),
-                        FirstName = "Staff",
-                        LastName = "Member",
-                        Email = "staff@nexdesk.com",
-                        Role = "staff",
-                        DepartmentId = "5", // Operations
-                        IsActive = true,
-                        CreatedBy = "System",
-                        CreatedTime = DateTime.Now,
-                        UpdatedTime = DateTime.Now
-                    },
-                    new User
-                    {
-                        Id = "4",
-                        UserId = "USR004",
-                        Username = "superadmin",
-                        Password = PasswordManager.EncryptPassword("super123"),
-                        FirstName = "Super",
-                        LastName = "Admin",
-                        Email = "superadmin@nexdesk.com",
-                        Role = "superadmin",
-                        DepartmentId = "5", // Operations/Management
-                        IsActive = true,
-                        CreatedBy = "System",
-                        CreatedTime = DateTime.Now,
-                        UpdatedTime = DateTime.Now
-                    }
-                };
+                        new User
+                        {
+                            Id = "1",
+                            UserId = "USR001",
+                            Username = "admin",
+                            Password = PasswordManager.EncryptPassword("admin123"),
+                            FirstName = "Admin",
+                            LastName = "User",
+                            Email = "admin@nexdesk.com",
+                            Role = "admin",
+                            DepartmentId = "1", // IT
+                            IsActive = true,
+                            CreatedBy = "System",
+                            CreatedTime = DateTime.Now,
+                            UpdatedTime = DateTime.Now
+                        },
+                        new User
+                        {
+                            Id = "2",
+                            UserId = "USR002",
+                            Username = "agent",
+                            Password = PasswordManager.EncryptPassword("agent123"),
+                            FirstName = "Agent",
+                            LastName = "Smith",
+                            Email = "agent@nexdesk.com",
+                            Role = "agent",
+                            DepartmentId = "6", // Customer Support
+                            IsActive = true,
+                            CreatedBy = "System",
+                            CreatedTime = DateTime.Now,
+                            UpdatedTime = DateTime.Now
+                        },
+                        new User
+                        {
+                            Id = "3",
+                            UserId = "USR003",
+                            Username = "staff",
+                            Password = PasswordManager.EncryptPassword("staff123"),
+                            FirstName = "Staff",
+                            LastName = "Member",
+                            Email = "staff@nexdesk.com",
+                            Role = "staff",
+                            DepartmentId = "5", // Operations
+                            IsActive = true,
+                            CreatedBy = "System",
+                            CreatedTime = DateTime.Now,
+                            UpdatedTime = DateTime.Now
+                        },
+                        new User
+                        {
+                            Id = "4",
+                            UserId = "USR004",
+                            Username = "superadmin",
+                            Password = PasswordManager.EncryptPassword("super123"),
+                            FirstName = "Super",
+                            LastName = "Admin",
+                            Email = "superadmin@nexdesk.com",
+                            Role = "superadmin",
+                            DepartmentId = "5", // Operations/Management
+                            IsActive = true,
+                            CreatedBy = "System",
+                            CreatedTime = DateTime.Now,
+                            UpdatedTime = DateTime.Now
+                        }
+                    };
 
-                _context.Users.AddRange(testUsers);
-                _context.SaveChanges();
+                    _context.Users.AddRange(testUsers);
+                    _context.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log error but continue
+                Console.WriteLine($"Error seeding users: {ex.Message}");
             }
         }
     }
 }
+
+// In Program.cs or Startup.cs, inside the Main method or the appropriate method:

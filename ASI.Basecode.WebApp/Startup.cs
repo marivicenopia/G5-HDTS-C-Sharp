@@ -7,6 +7,7 @@ using ASI.Basecode.WebApp.Models;
 using ASI.Basecode.WebApp.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -108,6 +109,16 @@ namespace ASI.Basecode.WebApp
             //     options.IOTimeout = TimeSpan.FromSeconds(30);
             // });
 
+            // CORS Configuration for React Frontend
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowReactApp", policy =>
+                    policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials());
+            });
+
             // DI Services AutoMapper(Add Profile)
             this.ConfigureAutoMapper();
 
@@ -161,7 +172,16 @@ namespace ASI.Basecode.WebApp
 
             this._app.UseAuthentication();
             this._app.UseAuthorization();
-            this._app.UseEndpoints(endpoints => endpoints.MapControllers());
+            this._app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                // Fallback to welcome message
+                endpoints.MapGet("/", (HttpContext context) =>
+                {
+                    context.Response.ContentType = "application/json";
+                    return context.Response.WriteAsJsonAsync(new { message = "NexDesk API is running. Use /api/* routes to access the API." });
+                });
+            });
 
             // Seed the in-memory database
             using (var scope = this._app.ApplicationServices.CreateScope())

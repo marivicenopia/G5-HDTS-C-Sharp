@@ -26,6 +26,23 @@ namespace ASI.Basecode.WebApp
             public AutoMapperProfileConfiguration()
             {
                 CreateMap<UserViewModel, User>();
+
+                // Ticket Mappings
+                CreateMap<CreateTicketDto, Ticket>()
+                    .ForMember(dest => dest.Id, opt => opt.Ignore())
+                    .ForMember(dest => dest.SubmittedDate, opt => opt.Ignore())
+                    .ForMember(dest => dest.Status, opt => opt.Ignore())
+                    .ForMember(dest => dest.ResolvedDate, opt => opt.Ignore())
+                    .ForMember(dest => dest.ResolvedBy, opt => opt.Ignore())
+                    .ForMember(dest => dest.ResolutionDescription, opt => opt.Ignore())
+                    .ForMember(dest => dest.AgentFeedback, opt => opt.Ignore());
+
+                CreateMap<UpdateTicketDto, Ticket>()
+                    .ForMember(dest => dest.Id, opt => opt.Ignore())
+                    .ForMember(dest => dest.SubmittedDate, opt => opt.Ignore())
+                    .ForMember(dest => dest.SubmittedBy, opt => opt.Ignore());
+
+                CreateMap<Ticket, TicketDto>();
             }
         }
     }

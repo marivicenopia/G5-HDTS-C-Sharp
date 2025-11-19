@@ -2,6 +2,7 @@ using ASI.Basecode.Services.Interfaces;
 using ASI.Basecode.Services.ServiceModels;
 using ASI.Basecode.WebApp.Mvc;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -38,12 +39,14 @@ namespace ASI.Basecode.WebApp.Controllers
         /// Get complete dashboard data for the authenticated user
         /// </summary>
         [HttpGet("data")]
-        [AllowAnonymous] // Temporarily remove auth for testing
+        [AllowAnonymous] // Temporarily allow anonymous access for development
+        // [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> GetDashboardData()
         {
             try
             {
-                // Temporarily hardcode user info for testing
+                // Temporarily use hardcoded values for development
+                // TODO: Implement proper JWT token authentication
                 var data = await _dashboardService.GetDashboardDataAsync("admin", "test-user", "1");
 
                 return Ok(new { success = true, data });

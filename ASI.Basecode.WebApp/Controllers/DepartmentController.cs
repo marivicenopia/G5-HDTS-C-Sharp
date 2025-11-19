@@ -3,6 +3,7 @@ using ASI.Basecode.Services.Interfaces;
 using ASI.Basecode.WebApp.Models;
 using ASI.Basecode.WebApp.Mvc;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +17,8 @@ using static ASI.Basecode.Resources.Constants.Enums;
 namespace ASI.Basecode.WebApp.Controllers
 {
     [Route("api/[controller]")]
-    [AllowAnonymous] // For development - you may want to add proper authorization later
+    [AllowAnonymous] // Temporarily allow anonymous access for development
+    // [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class DepartmentController : ControllerBase<DepartmentController>
     {
         private readonly IDepartmentService _departmentService;
