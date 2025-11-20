@@ -3,6 +3,7 @@ using ASI.Basecode.Services.Interfaces;
 using ASI.Basecode.WebApp.Models;
 using ASI.Basecode.WebApp.Mvc;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -112,14 +113,14 @@ namespace ASI.Basecode.WebApp.Controllers
         /// Add new article
         /// </summary>
         [HttpPost("AddArticle")]
-        [AllowAnonymous]
-        public async Task<IActionResult> AddArticle([FromBody] AddArticleRequest request)
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> AddArticle([FromBody] Article request)
         {
             try
             {
                 var errors = new List<string>();
                 var title = request.Title?.Trim();
-                var category = request.CategoryId?.Trim();
+                var category = request.Category?.Trim();
                 var content = request.Content?.Trim();
                 var author = request.Author?.Trim();
 
@@ -132,9 +133,9 @@ namespace ASI.Basecode.WebApp.Controllers
                 {
                     errors.Add("Title is required.");
                 }
-                else if (title.Length > 100)
+                else if (title.Length > 200)
                 {
-                    errors.Add("Title must not exceed 100 characters.");
+                    errors.Add("Title must not exceed 200 characters.");
                 }
 
                 if (string.IsNullOrWhiteSpace(content))
@@ -154,12 +155,18 @@ namespace ASI.Basecode.WebApp.Controllers
                 // Generate simple ID 
                 var articleId = Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
 
+                // Get current user's email for author field
+                var currentUserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+                var authorName = string.IsNullOrWhiteSpace(author) ?
+                    (string.IsNullOrWhiteSpace(currentUserEmail) ? "Unknown" : currentUserEmail) :
+                    author;
+
                 var article = new Article
                 {
                     Id = articleId,
                     Title = title,
                     Category = category,
-                    Author = string.IsNullOrWhiteSpace(author) ? "Unknown" : author,
+                    Author = authorName,
                     Content = content
                 };
 
@@ -178,8 +185,8 @@ namespace ASI.Basecode.WebApp.Controllers
         /// Update existing article
         /// </summary>
         [HttpPut("UpdateArticle/{id}")]
-        [AllowAnonymous]
-        public async Task<IActionResult> UpdateArticle(string id, [FromBody] UpdateArticleRequest request)
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> UpdateArticle(string id, [FromBody] Article request)
         {
             try
             {
@@ -190,9 +197,23 @@ namespace ASI.Basecode.WebApp.Controllers
                     return NotFound(new ApiResult<object>(Status.Error, null, "Article not found"));
                 }
 
+                // Check user role and permissions
+                var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+
+                if (string.IsNullOrEmpty(userRole))
+                {
+                    return Unauthorized(new ApiResult<object>(Status.Error, null, "Authentication required"));
+                }
+
+                // Agents, admins, and superadmins can all edit articles
+                if (userRole.ToLower() != "agent" && userRole.ToLower() != "admin" && userRole.ToLower() != "superadmin")
+                {
+                    return Unauthorized(new ApiResult<object>(Status.Error, null, "Insufficient permissions to edit articles"));
+                }
+
                 var errors = new List<string>();
                 var title = request.Title?.Trim();
-                var category = request.CategoryId?.Trim();
+                var category = request.Category?.Trim();
                 var content = request.Content?.Trim();
                 var author = request.Author?.Trim();
 
@@ -205,9 +226,9 @@ namespace ASI.Basecode.WebApp.Controllers
                 {
                     errors.Add("Title is required.");
                 }
-                else if (title.Length > 100)
+                else if (title.Length > 200)
                 {
-                    errors.Add("Title must not exceed 100 characters.");
+                    errors.Add("Title must not exceed 200 characters.");
                 }
 
                 if (string.IsNullOrWhiteSpace(content))
@@ -248,7 +269,7 @@ namespace ASI.Basecode.WebApp.Controllers
         /// Delete article
         /// </summary>
         [HttpDelete("DeleteArticle/{id}")]
-        [AllowAnonymous]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> DeleteArticle(string id)
         {
             try

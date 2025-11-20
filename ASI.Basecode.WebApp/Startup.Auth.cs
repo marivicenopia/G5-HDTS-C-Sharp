@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Text;
 
 namespace ASI.Basecode.WebApp
 {
@@ -29,7 +31,17 @@ namespace ASI.Basecode.WebApp
             this._services.AddAuthentication(Const.AuthenticationScheme)
             .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
             {
-                options.TokenValidationParameters = tokenValidationParameters;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"])),
+                    ValidateIssuer = true,
+                    ValidIssuer = Configuration["Jwt:Issuer"],
+                    ValidateAudience = true,
+                    ValidAudience = Configuration["Jwt:Audience"],
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                };
             })
             .AddCookie(Const.AuthenticationScheme, options =>
             {

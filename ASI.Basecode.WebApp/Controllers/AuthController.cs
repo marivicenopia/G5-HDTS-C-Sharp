@@ -81,7 +81,7 @@ namespace ASI.Basecode.WebApp.Controllers
         }
 
         [HttpPost("logout")]
-        public async Task<IActionResult> Logout()
+        public IActionResult Logout()
         {
             try
             {
