@@ -18,7 +18,7 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IO;
 using System.Text;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models; //yo can remove this, was not on my branch
 
 namespace ASI.Basecode.WebApp
 {
@@ -139,7 +139,8 @@ namespace ASI.Basecode.WebApp
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "NexDesk API v1");
             });
-
+            // stop until here, line 137 to 142
+            
             if (!this._environment.IsDevelopment())
             {
                 this._app.UseHsts();
