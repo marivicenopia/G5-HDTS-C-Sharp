@@ -29,7 +29,7 @@ public partial class NexDeskDbContext : DbContext
     public virtual DbSet<Department> Departments { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("Server=LANCE-PC\\SQLEXPRESS;Database=NexDeskDb;Trusted_Connection=True;MultipleActiveResultSets=True;TrustServerCertificate=True");
+        => optionsBuilder.UseSqlServer("Server=DESKTOP-NAUCN0P\\SQLEXPRESS;Database=NexDeskDb;Trusted_Connection=True;MultipleActiveResultSets=True;TrustServerCertificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
