@@ -43,6 +43,9 @@ namespace ASI.Basecode.WebApp
                     .ForMember(dest => dest.SubmittedBy, opt => opt.Ignore());
 
                 CreateMap<Ticket, TicketDto>();
+
+                // Attachment mapping
+                CreateMap<TicketAttachment, TicketAttachmentDto>();
             }
         }
     }

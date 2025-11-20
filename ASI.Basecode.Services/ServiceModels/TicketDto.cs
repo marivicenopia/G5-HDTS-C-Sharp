@@ -20,5 +20,6 @@ namespace ASI.Basecode.Services.ServiceModels
         public DateTime ResolvedDate { get; set; }
         public string ResolutionDescription { get; set; }
       public string AgentFeedback { get; set; }
+        public string AttachmentsJson { get; set; }
     }
 }

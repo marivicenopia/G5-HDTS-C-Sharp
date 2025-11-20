@@ -9,6 +9,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ASI.Basecode.WebApp.Controllers
@@ -22,15 +24,18 @@ namespace ASI.Basecode.WebApp.Controllers
     public class TicketController : ControllerBase<TicketController>
     {
         private readonly ITicketService _ticketService;
+        private readonly ITicketAttachmentService _attachmentService; // added
 
         public TicketController(
        IHttpContextAccessor httpContextAccessor,
  ILoggerFactory loggerFactory,
             IConfiguration configuration,
        IMapper mapper,
-            ITicketService ticketService) : base(httpContextAccessor, loggerFactory, configuration, mapper)
+            ITicketService ticketService,
+ ITicketAttachmentService attachmentService) : base(httpContextAccessor, loggerFactory, configuration, mapper)
         {
             _ticketService = ticketService;
+ _attachmentService = attachmentService;
   }
 
         /// <summary>
@@ -168,6 +173,109 @@ namespace ASI.Basecode.WebApp.Controllers
         return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An error occurred while deleting the ticket." });
         }
         }
+
+        /// <summary>
+ /// Append attachment metadata directly into the Ticket.AttachmentsJson column (no separate table).
+ /// Form file field: files (multiple) or file (single).
+ /// </summary>
+ [HttpPost("{id}/attachments-json")]
+ [Consumes("multipart/form-data")]
+ [ProducesResponseType(StatusCodes.Status200OK)]
+ [ProducesResponseType(StatusCodes.Status404NotFound)]
+ public async Task<IActionResult> AddAttachmentsJson(string id, [FromForm] List<IFormFile> files, [FromForm] IFormFile file)
+ {
+ try
+ {
+ var ticket = await _ticketService.GetTicketByIdAsync(id);
+ if (ticket == null)
+ return NotFound(new { message = $"Ticket with ID {id} not found." });
+
+ if ((files == null || files.Count ==0) && file != null)
+ files = new List<IFormFile> { file };
+ if (files == null || files.Count ==0)
+ return BadRequest(new { message = "No files provided" });
+
+ var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", id);
+ Directory.CreateDirectory(uploadsDir);
+ var metaList = new List<CreateTicketAttachmentDto>();
+ foreach (var f in files.Where(f => f != null && f.Length >0))
+ {
+ var newName = Guid.NewGuid() + Path.GetExtension(f.FileName);
+ var fullPath = Path.Combine(uploadsDir, newName);
+ using (var stream = System.IO.File.Create(fullPath))
+ await f.CopyToAsync(stream);
+ metaList.Add(new CreateTicketAttachmentDto
+ {
+ Name = f.FileName,
+ Size = (int)f.Length,
+ Type = f.ContentType,
+ Url = $"/uploads/{id}/{newName}"
+ });
+ }
+ var ok = await _ticketService.AddAttachmentsAsync(id, metaList);
+ if (!ok) return NotFound(new { message = "Ticket not found (during update)" });
+ var updated = await _ticketService.GetTicketByIdAsync(id);
+ return Ok(updated);
+ }
+ catch (Exception ex)
+ {
+ this.HandleExceptionLog(ex, nameof(AddAttachmentsJson));
+ return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Error adding attachments", error = ex.Message });
+ }
+ }
+
+        /// <summary>
+ /// Single-step ticket creation with optional attachments (multipart/form-data).
+ /// Form fields: title, description, priority, department, submittedBy, assignedTo(optional)
+ /// Files: file (single) or files (multiple)
+ /// Returns ticket plus saved attachments.
+ /// </summary>
+ [HttpPost("with-attachments")]
+ [Consumes("multipart/form-data")]
+ [ProducesResponseType(StatusCodes.Status201Created)]
+ [ProducesResponseType(StatusCodes.Status400BadRequest)]
+ public async Task<IActionResult> CreateTicketWithAttachments(
+ [FromForm] CreateTicketDto createTicketDto,
+ [FromForm] List<IFormFile> files,
+ [FromForm] IFormFile file)
+ {
+ try
+ {
+ if (!ModelState.IsValid) return BadRequest(ModelState);
+ var createdTicket = await _ticketService.CreateTicketAsync(createTicketDto);
+ // Normalize files list
+ if ((files == null || files.Count ==0) && file != null)
+ files = new List<IFormFile> { file };
+ var saved = new List<TicketAttachmentDto>();
+ if (files != null && files.Count >0)
+ {
+ var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", createdTicket.Id);
+ Directory.CreateDirectory(uploadDir);
+ foreach (var f in files.Where(f => f != null && f.Length >0))
+ {
+ var newName = Guid.NewGuid() + Path.GetExtension(f.FileName);
+ var fullPath = Path.Combine(uploadDir, newName);
+ using (var stream = System.IO.File.Create(fullPath))
+ await f.CopyToAsync(stream);
+ var meta = new CreateTicketAttachmentDto
+ {
+ Name = f.FileName,
+ Size = (int)f.Length,
+ Type = f.ContentType,
+ Url = $"/uploads/{createdTicket.Id}/{newName}"
+ };
+ var added = await _attachmentService.AddAsync(createdTicket.Id, meta);
+ if (added != null) saved.Add(added);
+ }
+ }
+ return CreatedAtAction(nameof(GetTicketById), new { id = createdTicket.Id }, new { ticket = createdTicket, attachments = saved });
+ }
+ catch (Exception ex)
+ {
+ this.HandleExceptionLog(ex, nameof(CreateTicketWithAttachments));
+ return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Error creating ticket with attachments", error = ex.Message });
+ }
+ }
     }
 }
 

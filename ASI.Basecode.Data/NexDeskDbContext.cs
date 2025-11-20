@@ -129,7 +129,7 @@ public partial class NexDeskDbContext : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false);
             entity.Property(e => e.TicketId)
-                .HasMaxLength(20)
+                .HasMaxLength(450)
                 .IsUnicode(false);
             entity.Property(e => e.Type)
                 .HasMaxLength(255)
@@ -137,6 +137,11 @@ public partial class NexDeskDbContext : DbContext
             entity.Property(e => e.Url)
                 .HasMaxLength(2083)
                 .IsUnicode(false);
+
+            entity.HasOne<Ticket>()
+                .WithMany()
+                .HasForeignKey(e => e.TicketId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<User>(entity =>
