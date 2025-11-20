@@ -7,23 +7,26 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace ASI.Basecode.Services.Services
 {
     /// <summary>
     /// Service for Ticket operations
     /// </summary>
-    public class TicketService: ITicketService
+    public class TicketService : ITicketService
     {
         private readonly ITicketRepository _ticketRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ITicketAttachmentService _ticketAttachmentService;
 
-        public TicketService(ITicketRepository ticketRepository, IUnitOfWork unitOfWork, IMapper mapper)
+        public TicketService(ITicketRepository ticketRepository, IUnitOfWork unitOfWork, IMapper mapper, ITicketAttachmentService ticketAttachmentService)
         {
             _ticketRepository = ticketRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _ticketAttachmentService = ticketAttachmentService;
         }
 
         /// <summary>
@@ -32,7 +35,23 @@ namespace ASI.Basecode.Services.Services
         public async Task<IEnumerable<TicketDto>> GetAllTicketsAsync()
         {
             var tickets = _ticketRepository.GetTickets().ToList();
-            return _mapper.Map<IEnumerable<TicketDto>>(tickets);
+            var ticketDtos = new List<TicketDto>();
+
+            foreach (var ticket in tickets)
+            {
+                var ticketDto = _mapper.Map<TicketDto>(ticket);
+
+                // Get attachments for this ticket
+                var attachments = await _ticketAttachmentService.GetByTicketAsync(ticket.Id);
+                if (attachments.Any())
+                {
+                    ticketDto.AttachmentsJson = JsonConvert.SerializeObject(attachments);
+                }
+
+                ticketDtos.Add(ticketDto);
+            }
+
+            return ticketDtos;
         }
 
         /// <summary>
@@ -44,7 +63,16 @@ namespace ASI.Basecode.Services.Services
             if (ticket == null)
                 return null;
 
-            return _mapper.Map<TicketDto>(ticket);
+            var ticketDto = _mapper.Map<TicketDto>(ticket);
+
+            // Get attachments for this ticket
+            var attachments = await _ticketAttachmentService.GetByTicketAsync(ticket.Id);
+            if (attachments.Any())
+            {
+                ticketDto.AttachmentsJson = JsonConvert.SerializeObject(attachments);
+            }
+
+            return ticketDto;
         }
 
         /// <summary>
