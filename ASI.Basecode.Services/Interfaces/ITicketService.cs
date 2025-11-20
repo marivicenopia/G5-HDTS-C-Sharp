@@ -31,6 +31,14 @@ namespace ASI.Basecode.Services.Interfaces
         Task<TicketDto> CreateTicketAsync(CreateTicketDto createTicketDto);
 
         /// <summary>
+        /// Create a new ticket with attachments asynchronously
+        /// </summary>
+        /// <param name="createTicketDto">Ticket creation data</param>
+        /// <param name="attachments">The collection of attachment metadata to add</param>
+        /// <returns>Created TicketDto with attachments</returns>
+        Task<TicketDto> CreateTicketWithAttachmentsAsync(CreateTicketDto createTicketDto, IEnumerable<CreateTicketAttachmentDto> attachments);
+
+        /// <summary>
         /// Update an existing ticket asynchronously
         /// </summary>
         /// <param name="id">Ticket ID</param>
@@ -44,5 +52,13 @@ namespace ASI.Basecode.Services.Interfaces
         /// <param name="id">Ticket ID</param>
         /// <returns>True if delete successful, false otherwise</returns>
         Task<bool> DeleteTicketAsync(string id);
+
+        /// <summary>
+        /// Add attachments metadata to a ticket asynchronously
+        /// </summary>
+        /// <param name="ticketId">The ID of the ticket to add attachments to</param>
+        /// <param name="attachments">The collection of attachment metadata to add</param>
+        /// <returns>True if the operation was successful, false otherwise</returns>
+        Task<bool> AddAttachmentsAsync(string ticketId, IEnumerable<CreateTicketAttachmentDto> attachments);
     }
 }
