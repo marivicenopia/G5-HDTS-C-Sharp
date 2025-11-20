@@ -69,6 +69,16 @@ namespace ASI.Basecode.Services.Services
         }
 
         /// <summary>
+        /// Create a new ticket with attachments asynchronously
+        /// </summary>
+        public async Task<TicketDto> CreateTicketWithAttachmentsAsync(CreateTicketDto createTicketDto, IEnumerable<CreateTicketAttachmentDto> attachments)
+        {
+            var created = await CreateTicketAsync(createTicketDto);
+            // attachments persisted by controller via attachment service; no JSON storage now
+            return created;
+        }
+
+        /// <summary>
         /// Update an existing ticket asynchronously
         /// </summary>
         public async Task<bool> UpdateTicketAsync(string id, UpdateTicketDto updateTicketDto)
@@ -95,6 +105,12 @@ namespace ASI.Basecode.Services.Services
                 _unitOfWork.SaveChanges();
             }
             return success;
+        }
+
+        public Task<bool> AddAttachmentsAsync(string ticketId, IEnumerable<CreateTicketAttachmentDto> attachments)
+        {
+            // Deprecated; attachments handled by TicketAttachmentService directly.
+            return Task.FromResult(true);
         }
     }
 }
