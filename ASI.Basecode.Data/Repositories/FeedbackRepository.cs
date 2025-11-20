@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace ASI.Basecode.Data.Repositories
 {
-    public class FeedbackRepository: BaseRepository, IFeedbackRepository
+    public class FeedbackRepository : BaseRepository, IFeedbackRepository
     {
         public FeedbackRepository(IUnitOfWork unitOfWork) : base(unitOfWork)
         {
@@ -32,13 +32,13 @@ namespace ASI.Basecode.Data.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public Task AddFeedbackAsync(Feedback feedback)
+        public async Task AddFeedbackAsync(Feedback feedback)
         {
             // Use raw SQL since Feedback table has no primary key
             var sql = @"INSERT INTO [dbo].[Feedbacks] ([Id], [Name], [Email], [Title], [Message], [Experience], [Date], [TicketId])
                         VALUES (@Id, @Name, @Email, @Title, @Message, @Experience, @Date, @TicketId)";
 
-            Context.Database.ExecuteSqlRaw(sql,
+            await Context.Database.ExecuteSqlRawAsync(sql,
                 new SqlParameter("@Id", (object)feedback.Id ?? DBNull.Value),
                 new SqlParameter("@Name", (object)feedback.Name ?? DBNull.Value),
                 new SqlParameter("@Email", (object)feedback.Email ?? DBNull.Value),
@@ -47,8 +47,6 @@ namespace ASI.Basecode.Data.Repositories
                 new SqlParameter("@Experience", (object)feedback.Experience ?? DBNull.Value),
                 new SqlParameter("@Date", (object)feedback.Date ?? DBNull.Value),
                 new SqlParameter("@TicketId", (object)feedback.TicketId ?? DBNull.Value));
-
-            return Task.CompletedTask;
         }
     }
 }

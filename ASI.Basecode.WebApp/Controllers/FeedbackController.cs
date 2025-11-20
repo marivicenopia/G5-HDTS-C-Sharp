@@ -19,7 +19,7 @@ namespace ASI.Basecode.WebApp.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class FeedbackController: ControllerBase<FeedbackController>
+    public class FeedbackController : ControllerBase<FeedbackController>
     {
         private readonly IFeedbackService _feedbackService;
         private readonly IArticleService _articleService;
@@ -172,7 +172,7 @@ namespace ASI.Basecode.WebApp.Controllers
                 if (!string.IsNullOrWhiteSpace(articleTitle))
                 {
                     var articles = await _articleService.GetAllArticlesAsync();
-                    var matchingArticle = articles.FirstOrDefault(a => 
+                    var matchingArticle = articles.FirstOrDefault(a =>
                         a.Title.Equals(articleTitle, StringComparison.OrdinalIgnoreCase));
                     if (matchingArticle != null)
                     {
@@ -204,6 +204,68 @@ namespace ASI.Basecode.WebApp.Controllers
             }
         }
 
+        /// <summary>
+        /// Submit ticket feedback
+        /// </summary>
+        [HttpPost("SubmitTicketFeedback")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SubmitTicketFeedback([FromBody] SubmitTicketFeedbackRequest request)
+        {
+            try
+            {
+                var errors = new List<string>();
+
+                // Validate required fields
+                if (string.IsNullOrWhiteSpace(request.Name))
+                    errors.Add("Name is required.");
+
+                if (string.IsNullOrWhiteSpace(request.Email))
+                    errors.Add("Email is required.");
+                else if (!IsValidEmail(request.Email))
+                    errors.Add("Invalid email format.");
+
+                if (string.IsNullOrWhiteSpace(request.Title))
+                    errors.Add("Title is required.");
+
+                if (string.IsNullOrWhiteSpace(request.Message))
+                    errors.Add("Message is required.");
+
+                if (string.IsNullOrWhiteSpace(request.Experience))
+                    errors.Add("Experience rating is required.");
+
+                if (string.IsNullOrWhiteSpace(request.TicketId))
+                    errors.Add("Ticket ID is required.");
+
+                if (errors.Any())
+                {
+                    return BadRequest(new { success = false, errors = errors });
+                }
+
+                // Create feedback object
+                var feedback = new ASI.Basecode.Data.Models.Feedback
+                {
+                    Id = request.Id ?? Guid.NewGuid().ToString(),
+                    Name = request.Name.Trim(),
+                    Email = request.Email.Trim(),
+                    Title = request.Title.Trim(),
+                    Message = request.Message.Trim(),
+                    Experience = request.Experience.Trim(),
+                    Date = DateTime.TryParse(request.Date, out var parsedDate) ? parsedDate : DateTime.Now,
+                    TicketId = request.TicketId.Trim()
+                };
+
+                // Save feedback using the service
+                await _feedbackService.AddFeedbackAsync(feedback);
+
+                return Ok(new { success = true, message = "Feedback submitted successfully!" });
+            }
+            catch (Exception ex)
+            {
+                this._logger.LogError(ex, "Error submitting ticket feedback: {ErrorMessage}", ex.Message);
+                return StatusCode(500, new { success = false, message = $"An error occurred while submitting feedback: {ex.Message}", details = ex.ToString() });
+            }
+        }
+
         private bool IsValidEmail(string email)
         {
             try
@@ -226,5 +288,18 @@ namespace ASI.Basecode.WebApp.Controllers
         public string Rating { get; set; }
         public string ArticleTitle { get; set; }
         public string FeedbackText { get; set; }
+    }
+
+    // Request model for submitting ticket feedback
+    public class SubmitTicketFeedbackRequest
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string Title { get; set; }
+        public string Message { get; set; }
+        public string Experience { get; set; }
+        public string Date { get; set; }
+        public string TicketId { get; set; }
     }
 }
