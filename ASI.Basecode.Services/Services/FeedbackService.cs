@@ -1,9 +1,7 @@
 ﻿using ASI.Basecode.Data.Interfaces;
+using ASI.Basecode.Data.Models;
 using ASI.Basecode.Services.Interfaces;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ASI.Basecode.Services.Services
@@ -14,6 +12,21 @@ namespace ASI.Basecode.Services.Services
         public FeedbackService(IFeedbackRepository feedbackRepository)
         {
             _feedbackRepository = feedbackRepository;
+        }
+
+        public async Task<List<Feedback>> GetAllFeedbacksAsync()
+        {
+            return await _feedbackRepository.GetAllFeedbacksAsync();
+        }
+
+        public async Task<Feedback> GetFeedbackByIdAsync(string id)
+        {
+            return await _feedbackRepository.GetFeedbackByIdAsync(id);
+        }
+
+        public async Task AddFeedbackAsync(Feedback feedback)
+        {
+            await _feedbackRepository.AddFeedbackAsync(feedback);
         }
     }
 }
