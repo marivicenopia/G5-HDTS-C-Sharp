@@ -18,6 +18,7 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IO;
 using System.Text;
+using Microsoft.OpenApi.Models;
 
 namespace ASI.Basecode.WebApp
 {
@@ -82,6 +83,7 @@ namespace ASI.Basecode.WebApp
             this._services = services;
 
             services.AddMemoryCache();
+            services.AddSwaggerGen();
 
             // Register SQL Server database configuration context as services.
             services.AddDbContext<ASI.Basecode.Data.NexDeskDbContext>(options =>
@@ -131,6 +133,12 @@ namespace ASI.Basecode.WebApp
         {
             this._app = app;
             this._environment = env;
+            // Add these lines to turn on the Swagger UI
+            this._app.UseSwagger();
+            this._app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "NexDesk API v1");
+            });
 
             if (!this._environment.IsDevelopment())
             {
