@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ASI.Basecode.Services.Services
 {
-    public class FeedbackService: IFeedbackService
+    public class FeedbackService : IFeedbackService
     {
         private readonly IFeedbackRepository _feedbackRepository;
         public FeedbackService(IFeedbackRepository feedbackRepository)

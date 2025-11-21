@@ -394,17 +394,4 @@ ITicketAttachmentService attachmentService) : base(httpContextAccessor, loggerFa
   }
 }
 
-//// Map CreateTicketDto to Ticket
-//CreateMap<CreateTicketDto, Ticket>()
-//    .ForMember(dest => dest.Id, opt => opt.Ignore())
-//    .ForMember(dest => dest.SubmittedDate, opt => opt.Ignore())
-//    .ForMember(dest => dest.Status, opt => opt.Ignore())
-//    /* ... other ignored fields ... */;
 
-//// Map UpdateTicketDto to Ticket  
-//CreateMap<UpdateTicketDto, Ticket>()
-//    .ForMember(dest => dest.Id, opt => opt.Ignore())
-//    /* ... other ignored fields ... */;
-
-//// Map Ticket to TicketDto
-//CreateMap<Ticket, TicketDto>();

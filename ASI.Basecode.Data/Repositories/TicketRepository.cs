@@ -9,7 +9,7 @@ namespace ASI.Basecode.Data.Repositories
 {
     /// <summary>
     /// Repository for Ticket entity
-    /// </summary>
+    /// </summary>`
     public class TicketRepository: BaseRepository, ITicketRepository
     {
         public TicketRepository(IUnitOfWork unitOfWork) : base(unitOfWork)
