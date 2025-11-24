@@ -90,8 +90,9 @@ namespace ASI.Basecode.WebApp.Controllers
                     email = feedback.Email,
                     title = feedback.Title,
                     rating = feedback.Experience,
-                    feedbackText = feedback.Message,
-                    date = feedback.Date
+                    message = feedback.Message,  // Changed from feedbackText to message
+                    date = feedback.Date,
+                    ticketId = feedback.TicketId  // Added ticketId for ticket lookup
                 };
 
                 return Ok(new ApiResult<object>(Status.Success, response, "Feedback retrieved successfully"));

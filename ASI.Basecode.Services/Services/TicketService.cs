@@ -86,8 +86,8 @@ namespace ASI.Basecode.Services.Services
             ticket.Status = "Open";
 
             // Defaults for required columns in DB
-            ticket.AssignedTo = string.IsNullOrWhiteSpace(ticket.AssignedTo) ? "Unassigned" : ticket.AssignedTo;
-            ticket.ResolvedBy = string.IsNullOrWhiteSpace(ticket.ResolvedBy) ? "Unassigned" : ticket.ResolvedBy;
+            ticket.AssignedTo = string.IsNullOrEmpty(ticket.AssignedTo) ? "Unassigned" : ticket.AssignedTo;
+            ticket.ResolvedBy = string.IsNullOrEmpty(ticket.ResolvedBy) ? "Unassigned" : ticket.ResolvedBy;
             ticket.ResolvedDate = ticket.ResolvedDate == default ? DateTime.Now : ticket.ResolvedDate;
 
             _ticketRepository.Add(ticket);

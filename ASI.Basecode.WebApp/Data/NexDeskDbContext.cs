@@ -56,6 +56,11 @@ namespace ASI.Basecode.WebApp.Data
             modelBuilder.Entity<Feedback>()
                 .HasIndex(f => f.TicketId);
 
+            // Configure Feedback properties
+            modelBuilder.Entity<Feedback>()
+                .Property(f => f.TicketId)
+                .HasMaxLength(50);
+
             // Configure default values
             modelBuilder.Entity<User>()
                 .Property(u => u.IsActive)
